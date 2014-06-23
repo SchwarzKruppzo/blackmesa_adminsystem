@@ -78,7 +78,7 @@ if SERVER then
 		else
 			RunConsoleCommand( unpack(args))
 		end
-	end, 1)
+	end, 1 , "<commands>" )
 	
 	bmas.CreateCommand( "kick", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
@@ -91,7 +91,7 @@ if SERVER then
 				bmas.CommandNotify(ply," has kicked ",t_ply:Nick(),"",""," without reason.")
 			end
 		end
-	end, 2)
+	end, 2 , "<player name> [reason]" )
 	bmas.CreateCommand( "ban", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		local time = args[2] or 0
@@ -120,7 +120,7 @@ if SERVER then
 			end
 			
 		end
-	end, 2)	
+	end, 2 , "<player name> [time minutes] [reason]" )	
 	bmas.CreateCommand( "banid", function( ply, args )	
 		local steamID = args[1]
 		local time = args[2] or 0
@@ -157,7 +157,7 @@ if SERVER then
 				bmas.CommandNotify(ply," has banned SteamID ",steamID," permently",""," without reason.")
 			end
 		end
-	end, 2)	
+	end, 2 , "<steamid> [time minutes] [reason]")	
 	bmas.CreateCommand( "unban", function( ply, args )	
 		local steamID = args[1]
 		if !string.match( steamID, "STEAM_[0-5]:[0-9]:[0-9]+" ) then
@@ -170,7 +170,7 @@ if SERVER then
 			bmas.UnBan( steamID )
 			bmas.CommandNotify(ply," has unbanned SteamID ",steamID,"","","")
 		end
-	end, 1 )
+	end, 1 , "<steamid>" )
 	bmas.CreateCommand( "banlist", function( ply, args )
 		bmas.SystemNotify( ply,bmas.colors.white, "Ban list: " )
 		
@@ -181,43 +181,59 @@ if SERVER then
 		for k,v in pairs( decoded ) do
 			bmas.SystemNotify( ply, bmas.colors.white,"STEAMID: ", bmas.colors.gray, k , bmas.colors.white," Reason: ", bmas.colors.gray, v.r )
 		end
-	end, 3 )
+	end, 3 , "<none>" )
 	bmas.CreateCommand( "crash", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		if IsValid(t_ply) then
 			t_ply:SendLua("while true do end")
 			bmas.CommandNotify(ply," has crashed ",t_ply:Nick(),"","","")
 		end
-	end, 1 )
+	end, 1 , "<player name>" )
 	bmas.CreateCommand( "cleanup", function( ply, args )	
 		local time = args[1]
-		if cleanup.GetStatus() then
-			bmas.SystemNotify( ply, bmas.colors.red, "Cleanup is already started." )
+		if cleanup.GetStatus() or shutdown.GetStatus() then
+			bmas.SystemNotify( ply, bmas.colors.red, "Another event is already started." )
 			return
 		end
 		if time == nil then
-			time = 60
+			time = 61
 		end
 		cleanup.Start(time)
 		bmas.CommandNotify(ply," has started cleanup event.","","","")
 
-	end, 2 )
+	end, 2 , "[time seconds]" )
+	bmas.CreateCommand( "shutdown", function( ply, args )	
+		local time = args[1]
+		if cleanup.GetStatus() or shutdown.GetStatus() then
+			bmas.SystemNotify( ply, bmas.colors.red, "Another event is already started." )
+			return
+		end
+		if time == nil then
+			time = 61
+		end
+		shutdown.Start(time)
+		bmas.CommandNotify(ply," has started server shutdown event.","","","")
+
+	end, 1 , "[time seconds]" )
 	bmas.CreateCommand( "abort", function( ply, args )	
 		if cleanup.GetStatus() then
 			cleanup.Abort()
 			bmas.CommandNotify(ply," has aborted cleanup event.","","","")
+		elseif shutdown.GetStatus() then
+			shutdown.Abort()
+			bmas.CommandNotify(ply," has aborted server shutdown event.","","","")
 		else
-			bmas.SystemNotify( ply, bmas.colors.red, "No such cleanup event found." )
+			bmas.SystemNotify( ply, bmas.colors.red, "No such event found." )
 			return
 		end
-	end, 2 )
+	end, 2 , "<none>" )
 	bmas.CreateCommand( "goto", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		if IsValid(t_ply) then
 			ply:SetPos(t_ply:GetPos()-t_ply:GetForward()*50)
 			bmas.CommandNotify(ply," has teleported to ",t_ply:Nick(),"","","")
 		end
-	end, 1 )	
+	end, 1 , "<player name>" )	
 	bmas.CreateCommand( "bring", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		local t2_ply = bmas.FindPlayer( args[2] )[1]
@@ -230,21 +246,21 @@ if SERVER then
 				bmas.CommandNotify(ply," has bring ",t_ply:Nick()," to ","self","")
 			end
 		end
-	end, 1 )	
+	end, 1 , "<player name> [player2 name]" )	
 	bmas.CreateCommand( "slay", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		if IsValid(t_ply) then
 			t_ply:Kill()
 			bmas.CommandNotify(ply," has slayed ",t_ply:Nick(),"","","")
 		end
-	end, 1 )	
+	end, 1 , "<player name>" )	
 	bmas.CreateCommand( "spawn", function( ply, args )	
 		local t_ply = bmas.FindPlayer( args[1] )[1]
 		if IsValid(t_ply) then
 			t_ply:Spawn()
 			bmas.CommandNotify(ply," has spawned ",t_ply:Nick(),"","","")
 		end
-	end, 1 )
+	end, 1 , "<player name>" )
 	local SOUND_DISCO = false
 	bmas.CreateCommand( "disco", function( ply, args )
 		if SOUND_DISCO then
@@ -262,7 +278,7 @@ if SERVER then
 			end)]])
 			end
 		end
-	end, 1 )
+	end, 1 , "<none>" )
 	
 	timer.Create("BMAS_UNBAN",5,0,function()
 		if file.Exists( "bmas_bans.txt", "DATA" ) then
@@ -303,7 +319,7 @@ if SERVER then
 				bmas.CommandNotify(ply," has disabled godmode for ","self")			
 			end
 		end
-	end, 2)
+	end, 2 , "<player name>" )
 	
 	bmas.CreateCommand( "cmds", function( ply, args )	
 		bmas.SystemNotify( ply,bmas.colors.white, "Available commands: " )
@@ -315,9 +331,9 @@ if SERVER then
 			else
 				color = bmas.colors.red
 			end
-			bmas.SystemNotify( ply, color, k )
+			bmas.SystemNotify( ply, color, k, bmas.colors.white, " "..v.desc )
 		end
-	end, 3 )
+	end, 3 , "<none>" )
 end
 
 
