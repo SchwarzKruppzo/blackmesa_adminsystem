@@ -141,17 +141,15 @@ if ( SERVER ) then
 		end
 	end
 	function bmas.CommandNotify(ply,text,tply,text2,var1,text3,var2)
+		local text2 = text2 or ""
+		local var1 = var1 or ""
+		local text3 = text3 or ""
+		local var2 = var2 or ""
 		if IsValid(ply) then
-			local text2 = text2 or ""
-			local var1 = var1 or ""
-			local text3 = text3 or ""
-			local var2 = var2 or ""
 			bmas.Notify(bmas.colors.self,ply:Nick(),bmas.colors.white,text,bmas.colors.target,tply,bmas.colors.white,text2,bmas.colors.gray,var1,bmas.colors.white,text3,bmas.colors.gray,var2)
+		elseif type(ply) == "string" then
+			bmas.Notify(bmas.colors.self,ply,bmas.colors.white,text,bmas.colors.target,tply,bmas.colors.white,text2,bmas.colors.gray,var1,bmas.colors.white,text3,bmas.colors.gray,var2)
 		else
-			local text2 = text2 or ""
-			local var1 = var1 or ""
-			local text3 = text3 or ""
-			local var2 = var2 or ""
 			bmas.Notify(bmas.colors.self,"Console",bmas.colors.white,text,bmas.colors.target,tply,bmas.colors.white,text2,bmas.colors.gray,var1,bmas.colors.white,text3,bmas.colors.gray,var2)
 		end
 	end
