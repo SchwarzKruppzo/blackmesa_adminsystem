@@ -25,9 +25,9 @@ hook.Add("BMAS_COMMAND_CheckAccess","main.cpp",function( ply, cmd )
 		end
 	end
 end)
-function bmas.CreateCommand( str, func, access )
+function bmas.CreateCommand( str, func, access, desc )
 	bmas.commands = bmas.commands or {}
-	bmas.commands[str] = { name = str, access = access or 1, func = func }
+	bmas.commands[str] = { name = str, access = access or 1, func = func, desc = desc }
 end
 function bmas.RunCommand( ply, name, args )
 	if IsValid(ply) then
@@ -69,5 +69,5 @@ if SERVER then
 		bmas.SystemNotify( ply,bmas.colors.gray, "Black Mesa Administrative System" )
 		bmas.SystemNotify( ply,bmas.colors.target, "	a admin mod by Schwartsune Kumiko" )
 		bmas.SystemNotify( ply,bmas.colors.self, "	Copyright (C) 2014" )
-	end, 2 )
+	end, 2 , "<none>" )
 end
