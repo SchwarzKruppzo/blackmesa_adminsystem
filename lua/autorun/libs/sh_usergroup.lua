@@ -94,6 +94,7 @@ bmas.CreateCommand( "setaccess", function(ply,args)
 			if target:BMAS_GetAccess() ~= rank then
 				target:BMAS_SetAccess(rank)
 				bmas.CommandNotify(ply," has set ",target:Nick(),"",""," access to ",rank)
+				print(1)
 			end
 		end
 	end

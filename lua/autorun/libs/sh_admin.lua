@@ -61,15 +61,20 @@ end
 
 
 if SERVER then
-	function bmas.CheckBan( steamID, ipAddress, svPassword, sclPassword, name )
-		local ban,reason = bmas.IsBanned( steamID )
-		if ban then
-			return false,reason
-		else
-			return true
+	hook.Add("Initialize", "BMAS_LIB_CHECKBAN", function()
+		function GAMEMODE:CheckPassword(steamID, ipAdderss, svPass, clPass, strName)
+			local ban,reason = bmas.IsBanned( steamID )
+			if ban then
+				return false, "You are banned with reason: "..reason
+			end
+			if svPass != "" then
+				if svPass != clPass then
+					connect_manager.WrongPass("Kick: "..strName)
+					return false, "#GameUI_ServerRejectBadPassword"
+				end
+			end
 		end
-	end
-	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",bmas.CheckBan)
+	end)
 
 	bmas.CreateCommand( "rcon", function( ply, args )
 		if args[1] == nil then

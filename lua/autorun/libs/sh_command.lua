@@ -37,6 +37,8 @@ function bmas.RunCommand( ply, name, args )
 		else
 			bmas.SystemNotify(ply,bmas.colors.red,reason)
 		end
+	else
+		bmas.commands[name].func(ply,args)
 	end
 end
 function bmas.RunConCommand(ply, _, args)
