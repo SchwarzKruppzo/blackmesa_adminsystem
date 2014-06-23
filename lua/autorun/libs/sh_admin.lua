@@ -290,11 +290,14 @@ if SERVER then
 			local read = file.Read( "bmas_bans.txt", "DATA" )
 			local decoded = util.JSONToTable( read ) or {}	
 			for k,v in pairs(decoded) do
-				if os.time() >= tonumber(v.t) and v.t ~= 0 then
-					bmas.CommandNotify(decoded[ k ]," is unbanned (Ban time is reached).","","","","")
-					decoded[ k ] = nil
-					local encode = util.TableToJSON(decoded)
-					file.Write( "bmas_bans.txt", encode )
+				if os.time() >= tonumber(v.t) then
+					if tonumber(v.t) ~= 0 then
+						//bmas.CommandNotify( "test" ," is unbanned (Ban time is reached).","","","","")
+						bmas.Notify(bmas.colors.gray,k,bmas.colors.white," is unbanned (Ban time is reached)")
+						decoded[ k ] = nil
+						local encode = util.TableToJSON(decoded)
+						file.Write( "bmas_bans.txt", encode )
+					end
 				end
 			end
 		end
