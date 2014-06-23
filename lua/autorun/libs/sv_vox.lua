@@ -58,4 +58,4 @@ end
 bmas.CreateCommand( "vox", function( ply, args )
 	local str = table.concat( args, " ", 1)
 	bmas.AllPlayVox( str )
-end, 2 )
+end, 2, "<vox text>" )

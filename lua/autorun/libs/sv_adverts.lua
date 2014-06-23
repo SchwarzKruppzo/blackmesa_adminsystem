@@ -84,7 +84,7 @@ bmas.CreateCommand( "addadvert", function(ply,args) // >addadvert <name> <second
 	}
 	bmas.SaveAdverts()
 	bmas.CommandNotify(ply, " has created advert ", name )
-end, 1 )
+end, 1 , "<advert name> <seconds> <red> <green> <blue> <text>" )
 bmas.CreateCommand( "removeadvert", function( ply, args )
 	local name = args[1]
 	if not bmas.adverts[name] then
@@ -97,10 +97,10 @@ bmas.CreateCommand( "removeadvert", function( ply, args )
 	end
 	bmas.SaveAdverts()
 	bmas.CommandNotify(ply, " has removed advert ", name )
-end, 1 )
+end, 1 , "<advert name>" )
 bmas.CreateCommand( "adverts", function( ply, args )
 	bmas.SystemNotify( ply,bmas.colors.white, "Adverts: " )
 	for k,v in pairs( bmas.adverts ) do
 		bmas.SystemNotify( ply, bmas.colors.gray, k )
 	end
-end, 2 )
+end, 2 , "<none>" )

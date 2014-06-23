@@ -18,7 +18,7 @@ bmas.CreateCommand( "l", function( ply, args )
 		bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: Code expected, got shit." )
 		return
 	end
-end, 1 )
+end, 1 , "<code>" )
 bmas.CreateCommand( "ls", function( ply, args )
 	local code = table.concat( args, " ", 1 )
 	if code ~= nil then
@@ -28,7 +28,7 @@ bmas.CreateCommand( "ls", function( ply, args )
 		bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: Code expected, got shit." )
 		return
 	end
-end, 1 )
+end, 1 , "<code>" )
 bmas.CreateCommand( "lc", function( ply, args )
 	local code = table.concat( args, " ", 1 )
 	if code ~= nil then
@@ -38,7 +38,7 @@ bmas.CreateCommand( "lc", function( ply, args )
 		bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: Code expected, got shit." )
 		return
 	end
-end, 1 )
+end, 1 , "<code>" )
 bmas.CreateCommand( "lb", function( ply, args )
 	local code = table.concat( args, " ", 1 )
 	if code ~= nil then
@@ -48,7 +48,7 @@ bmas.CreateCommand( "lb", function( ply, args )
 		bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: Code expected, got shit." )
 		return
 	end
-end, 1 )
+end, 1 , "<code>" )
 bmas.CreateCommand( "lm", function( ply, args )
 	local t_ply = bmas.FindPlayer( args[1] )[1]
 	local code = table.concat( args, " ", 2 )
@@ -61,4 +61,4 @@ bmas.CreateCommand( "lm", function( ply, args )
 			return
 		end
 	end
-end, 1 )
+end, 1 , "<player name> <code>" )

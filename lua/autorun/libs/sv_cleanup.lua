@@ -42,7 +42,7 @@ end
  
  
 function cleanup.Start( numSeconds )
-    if cleanup.GetStatus() then return cleanup.Error("Cleanup is already started") end
+    if cleanup.GetStatus() or shutdown.GetStatus() then return cleanup.Error("Cleanup is already started") end
         local counter = numSeconds
         STATUS_CLEANUP = true
         timer.Create("CleanupTimer", 1, numSeconds, function()

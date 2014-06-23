@@ -97,5 +97,5 @@ bmas.CreateCommand( "setaccess", function(ply,args)
 			end
 		end
 	end
-end, 2 )
+end, 2 , "<player name> <usergroup name>" )
 end
