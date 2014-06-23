@@ -20,9 +20,14 @@ function meta:IsBanned()
 		return false,""
 	end
 end
-function bmas.Ban( steamid, time, reason)
+function bmas.Ban( steamid, time, reason, banner )
+	local nick = "Console"
+	if banner:IsPlayer() then
+		nick = banner:Nick() // cheat 228
+	end
+	
 	local save = {}
-	save[steamid] = {t = time,r = reason}
+	save[steamid] = {t = time,r = reason, comid = util.SteamIDTo64( steamid ), banner = nick}
 	local str = util.TableToJSON( save )
 	
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then
@@ -30,7 +35,7 @@ function bmas.Ban( steamid, time, reason)
 	else
 		local read = file.Read( "bmas_bans.txt", "DATA" )
 		local decoded = util.JSONToTable( read ) or {}
-		decoded[steamid] = {t = time,r = reason}
+		decoded[steamid] = {t = time,r = reason, comid = util.SteamIDTo64( steamid ), banner = nick}
 		local encode = util.TableToJSON(decoded)
 		file.Write( "bmas_bans.txt", encode )
 	end
@@ -40,6 +45,8 @@ function bmas.UnBan( steamid )
 	local read = file.Read( "bmas_bans.txt", "DATA" )
 	local decoded = util.JSONToTable( read ) or {}	
 	if decoded[ steamid ] then
+		decoded[ steamid ].banner = nil
+		decoded[ steamid ].comid = nil
 		decoded[ steamid ].t = nil
 		decoded[ steamid ].r = nil
 		decoded[ steamid ] = nil
@@ -47,35 +54,78 @@ function bmas.UnBan( steamid )
 		file.Write( "bmas_bans.txt", encode )
 	end
 end
-function bmas.IsBanned( steamid )
+function bmas.IsBanned( comid )
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
 	local read = file.Read( "bmas_bans.txt", "DATA" )
 	local decoded = util.JSONToTable( read ) or {}
-	if decoded[ steamid] then
-		return true,decoded[ steamid ].r
+	for k,v in pairs(decoded) do
+		if v.comid == comid then
+			return true,"You are banned by "..v.banner.." with reason "..v.r
+		end
+	end
+	return false,""
+end
+function bmas.IsBannedSteamID( steamid )
+	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
+	local read = file.Read( "bmas_bans.txt", "DATA" )
+	local decoded = util.JSONToTable( read ) or {}
+	if decoded[ steamid ] then
+		return true
 	else
-		return false,""
+		return false
 	end
 end
-
-
-
 if SERVER then
-	hook.Add("Initialize", "BMAS_LIB_CHECKBAN", function()
-		function GAMEMODE:CheckPassword(steamID, ipAdderss, svPass, clPass, strName)
-			local ban,reason = bmas.IsBanned( steamID )
-			if ban then
-				return false, "You are banned with reason: "..reason
-			end
-			if svPass != "" then
-				if svPass != clPass then
-					connect_manager.WrongPass("Kick: "..strName)
-					return false, "#GameUI_ServerRejectBadPassword"
-				end
+	connect_manager = {}
+
+	function connect_manager.Join(...)
+		MsgC(Color(0,255,0), "[")
+		MsgC(Color(0,200,0), "Join")
+		MsgC(Color(0,255,0), "] ")
+		print(...)
+	end
+
+	function connect_manager.WrongPass(...)
+		MsgC(Color(255,0,0), "[")
+		MsgC(Color(200,0,0), "WrongPass")
+		MsgC(Color(255,0,0), "] ")
+		print(...)
+	end
+
+	function connect_manager.Banned(...)
+		MsgC(Color(255,0,0), "[")
+		MsgC(Color(200,0,0), "Banned")
+		MsgC(Color(255,0,0), "] ")
+		print(...)
+	end
+
+	function connect_manager.Disconnect(...)
+		MsgC(Color(200,200,200), "[")
+		MsgC(Color(150,150,150), "Disconnect")
+		MsgC(Color(200,200,200), "] ")
+		print(...)
+	end
+
+	function CheckBan(steamID, ipAdderss, svPass, clPass, strName)
+		connect_manager.Join("Nick: "..strName..". Steam Profile: http://steamcommunity.com/profiles/" .. steamID.." IP Address: "..ipAdderss )
+		local ban,reason = bmas.IsBanned( steamID  )
+		if ban then
+			connect_manager.Banned("Kick: "..strName)
+			return false, reason
+		end
+		if svPass != "" then
+			if svPass != clPass then
+				connect_manager.WrongPass("Kick: "..strName)
+				return false, "#GameUI_ServerRejectBadPassword"
 			end
 		end
+	end
+	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",CheckBan)
+	gameevent.Listen( "player_disconnect" )
+	hook.Add( "player_disconnect", "BMAS_LIB_DISCONNECT", function( data )
+		connect_manager.Disconnect(data.name.." ("..data.reason..")")
 	end)
-
+	
 	bmas.CreateCommand( "rcon", function( ply, args )
 		if args[1] == nil then
 			bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: commands expected, got shit." )
@@ -108,9 +158,9 @@ if SERVER then
 			end
 			
 			if correct_time ~= 0 then
-				bmas.Ban( t_ply:SteamID(), tostring( os.time() + correct_time*60 ), reason)
+				bmas.Ban( t_ply:SteamID(), tostring( os.time() + correct_time*60 ), reason, ply)
 			elseif correct_time <= 0 then
-				bmas.Ban( t_ply:SteamID(), 0,  reason)
+				bmas.Ban( t_ply:SteamID(), 0,  reason, ply)
 			end
 			t_ply:Kick( reason )
 
@@ -133,7 +183,7 @@ if SERVER then
 		if !string.match( steamID, "STEAM_[0-5]:[0-9]:[0-9]+" ) then
 			bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: SteamID expected, got shit." )
 			return
-		elseif bmas.IsBanned( steamID ) then
+		elseif bmas.IsBannedSteamID( steamID ) then
 			bmas.SystemNotify( ply, bmas.colors.red, "This SteamID is already banned." )
 			return
 		else
@@ -147,9 +197,9 @@ if SERVER then
 				end
 			end
 			if correct_time ~= 0 then
-				bmas.Ban( steamID, tostring( os.time() + correct_time*60 ), reason)
+				bmas.Ban( steamID, tostring( os.time() + correct_time*60 ), reason, ply)
 			elseif correct_time <= 0 then
-				bmas.Ban( steamID, 0,  reason)
+				bmas.Ban( steamID, 0,  reason, ply)
 			end
 			
 			if tonumber(correct_time) > 0 and reason ~= "" then	// if we have time and reason then
@@ -168,7 +218,7 @@ if SERVER then
 		if !string.match( steamID, "STEAM_[0-5]:[0-9]:[0-9]+" ) then
 			bmas.SystemNotify( ply, bmas.colors.red, "Bad argument #1: SteamID expected, got shit." )
 			return
-		elseif not bmas.IsBanned( steamID ) then
+		elseif not bmas.IsBannedSteamID( steamID ) then
 			bmas.SystemNotify( ply, bmas.colors.red, "This SteamID is already unbanned." )
 			return
 		else
@@ -184,7 +234,7 @@ if SERVER then
 		local decoded = util.JSONToTable( read )
 		
 		for k,v in pairs( decoded ) do
-			bmas.SystemNotify( ply, bmas.colors.white,"STEAMID: ", bmas.colors.gray, k , bmas.colors.white," Reason: ", bmas.colors.gray, v.r )
+			bmas.SystemNotify( ply, bmas.colors.white,"STEAMID: ", bmas.colors.gray, k , bmas.colors.white," Reason: ", bmas.colors.gray, v.r , bmas.colors.white," Banned by: ", bmas.colors.gray, v.banner )
 		end
 	end, 3 , "<none>" )
 	bmas.CreateCommand( "crash", function( ply, args )	
