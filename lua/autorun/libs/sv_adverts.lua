@@ -99,7 +99,12 @@ bmas.CreateCommand( "removeadvert", function( ply, args )
 	bmas.CommandNotify(ply, " has removed advert ", name )
 end, 1 , "<advert name>" )
 bmas.CreateCommand( "adverts", function( ply, args )
-	bmas.SystemNotify( ply,bmas.colors.white, "Adverts: " )
+	if table.GetFirstKey(bmas.adverts) == nil then 
+		bmas.SystemNotify( ply,bmas.colors.red, "No such adverts found. " )
+		return
+	else
+		bmas.SystemNotify( ply,bmas.colors.white, "Adverts: " )
+	end
 	for k,v in pairs( bmas.adverts ) do
 		bmas.SystemNotify( ply, bmas.colors.gray, k )
 	end

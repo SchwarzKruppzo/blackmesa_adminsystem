@@ -227,12 +227,15 @@ if SERVER then
 		end
 	end, 1 , "<steamid>" )
 	bmas.CreateCommand( "banlist", function( ply, args )
-		bmas.SystemNotify( ply,bmas.colors.white, "Ban list: " )
-		
 		if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
 		local read = file.Read( "bmas_bans.txt", "DATA" )
 		local decoded = util.JSONToTable( read )
-		
+		if table.GetFirstKey(decoded) == nil then 
+			bmas.SystemNotify( ply,bmas.colors.red, "No such bans found. " )
+			return
+		else
+			bmas.SystemNotify( ply,bmas.colors.white, "Ban list: " )
+		end
 		for k,v in pairs( decoded ) do
 			bmas.SystemNotify( ply, bmas.colors.white,"STEAMID: ", bmas.colors.gray, k , bmas.colors.white," Reason: ", bmas.colors.gray, v.r , bmas.colors.white," Banned by: ", bmas.colors.gray, v.banner )
 		end
