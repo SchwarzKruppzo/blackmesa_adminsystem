@@ -395,6 +395,12 @@ if SERVER then
 			bmas.SystemNotify( ply, color, k, bmas.colors.white, " "..v.desc )
 		end
 	end, 3 , "<none>" )
+	bmas.CreateCommand( "cleardecals", function( ply, args )	
+		for k,v in pairs( player.GetAll() ) do
+			v:ConCommand('r_cleardecals 1')
+		end
+		bmas.CommandNotify(ply," has removed all decals.","")
+	end, 1 , "<none>" )
 end
 
 

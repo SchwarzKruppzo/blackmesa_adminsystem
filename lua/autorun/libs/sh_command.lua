@@ -60,6 +60,7 @@ function bmas.RunCommandOnSay( ply, str )
 		end
 		if bmas.commands[name] then // if command with that name is exist then we fuck it.
 			bmas.RunCommand( ply, name, t_args )
+			return true
 		end
 	end
 end
