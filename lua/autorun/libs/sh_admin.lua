@@ -9,6 +9,13 @@
 //===================================================================================
 
 timer.Simple(.1,function()
+bmas.lBanTime = {}
+bmas.lBanReason = {}
+bmas.lBanTime[0] = " permently"
+bmas.lBanTime[1] = " for %s minutes"
+bmas.lBanReason[""] = " without reason."
+bmas.lBanReason["1"] = " with reason %s"
+
 local meta = FindMetaTable("Player")
 function meta:IsBanned()
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
@@ -98,7 +105,8 @@ if SERVER then
 		MsgC(Color(200,200,200), "] ")
 		print(...)
 	end
-
+	gameevent.Listen( "player_disconnect" )
+	
 	function bmas.CheckBan(steamID, ipAdderss, svPass, clPass, strName)
 		connect_manager.Join("Nick: "..strName..". Steam Profile: http://steamcommunity.com/profiles/" .. steamID.." IP Address: "..ipAdderss )
 		local ban,reason = bmas.IsBanned( steamID  )
@@ -114,7 +122,6 @@ if SERVER then
 		end
 	end
 	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",bmas.CheckBan)
-	gameevent.Listen( "player_disconnect" )
 	hook.Add( "player_disconnect", "BMAS_LIB_DISCONNECT", function( data )
 		connect_manager.Disconnect(data.name.." ("..data.reason..")")
 	end)
@@ -155,16 +162,15 @@ if SERVER then
 			elseif correct_time <= 0 then
 				bmas.Ban( t_ply:SteamID(), 0,  reason, ply)
 			end
-
-			if tonumber(correct_time) > 0 and reason ~= "" then	// if we have time and reason then 
-				bmas.CommandNotify(ply," has banned ",nick," for ",tostring(correct_time)," minutes with reason ",reason)
-			elseif tonumber(correct_time) > 0 and reason == "" then // if we have time but don't have reason then
-				bmas.CommandNotify(ply," has banned ",nick," for ",tostring(correct_time)," minutes without reason.")
-			elseif tonumber(correct_time) == 0 and reason ~= "" then // if we don't have time (0) but have reason then
-				bmas.CommandNotify(ply," has banned ",nick," permently",""," with reason ",reason)
-			elseif tonumber(correct_time) == 0 and reason == "" then // if we don't have and reason then
-				bmas.CommandNotify(ply," has banned ",nick," permently",""," without reason.")
-			end
+			
+			local langID_time = 0
+			local langID_reason = ""
+			if correct_time > 0 then  langID_time   =  1  end
+			if reason ~= ""     then  langID_reason = "1" end
+			local m_sReason = string.format( bmas.lBanReason[ langID_reason ], reason )
+			local m_sTime = string.format( bmas.lBanTime[ langID_time ], correct_time )
+			bmas.CommandNotify(ply," has banned ",nick,m_sTime,"",m_sReason)
+			
 			t_ply:Kick( reason )
 		end
 	end, 2 , "<player name> [time minutes] [reason]" )	
@@ -189,15 +195,14 @@ if SERVER then
 				bmas.Ban( steamID, 0,  reason, ply)
 			end
 			
-			if tonumber(correct_time) > 0 and reason ~= "" then	// if we have time and reason then
-				bmas.CommandNotify(ply," has banned SteamID ",steamID," for ",tostring(correct_time)," minutes with reason ",reason)
-			elseif tonumber(correct_time) > 0 and reason == "" then // if we have time but don't have reason then
-				bmas.CommandNotify(ply," has banned SteamID ",steamID," for ",tostring(correct_time)," minutes without reason.")
-			elseif tonumber(correct_time) == 0 and reason ~= "" then // if we don't have time (0) but have reason then
-				bmas.CommandNotify(ply," has banned SteamID ",steamID," permently",""," with reason ",reason)
-			elseif tonumber(correct_time) == 0 and reason == "" then // if we don't have and reason then
-				bmas.CommandNotify(ply," has banned SteamID ",steamID," permently",""," without reason.")
-			end
+			local langID_time = 0
+			local langID_reason = ""
+			if correct_time > 0 then  langID_time   =  1  end
+			if reason ~= ""     then  langID_reason = "1" end
+			local m_sReason = string.format( bmas.lBanReason[ langID_reason ], reason )
+			local m_sTime = string.format( bmas.lBanTime[ langID_time ], correct_time )
+			bmas.CommandNotify(ply," has banned SteamID ",steamID,m_sTime,"",m_sReason)
+
 			for k,v in pairs(player.GetAll()) do
 				if v:SteamID() == steamID then
 					v:Kick( reason )
@@ -319,7 +324,6 @@ if SERVER then
 			for k,v in pairs(read) do
 				if os.time() >= tonumber(v.t) then
 					if tonumber(v.t) ~= 0 then
-						//bmas.CommandNotify( "test" ," is unbanned (Ban time is reached).","","","","")
 						bmas.Notify(bmas.colors.gray,k,bmas.colors.white," is unbanned (Ban time is reached)")
 						read[ k ] = nil
 						luadata.WriteFile( "bmas_bans.txt", read )
@@ -361,12 +365,6 @@ if SERVER then
 			v:ConCommand('r_cleardecals 1')
 		end
 		bmas.CommandNotify(ply," has removed all decals.","")
-	end, 1 , "<none>" )
-	bmas.CreateCommand( "url", function( ply, args )	
-		local str = table.concat( args )
-		for k,v in pairs( player.GetAll() ) do
-			v:SendLua([[g_3DHTML3:OpenURL(']]..str..[[')]])
-		end
 	end, 1 , "<none>" )
 end
 
