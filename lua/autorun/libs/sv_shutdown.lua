@@ -30,10 +30,10 @@ function shutdown.GetCommands()
 end
  
 function shutdown.GetStatus()
-	return STATUS_CLEANUP
+	return STATUS_SHUTDOWN
 end
 function shutdown.Abort()
-    STATUS_CLEANUP = false
+    STATUS_SHUTDOWN = false
 	timer.Destroy("ShutdownTimer")
 end
 function shutdown.Error( strError )
