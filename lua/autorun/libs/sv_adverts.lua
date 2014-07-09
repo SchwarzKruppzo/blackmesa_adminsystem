@@ -11,12 +11,11 @@
 bmas.adverts = bmas.adverts or {}
 function bmas.LoadAdverts()
 	if !file.Exists( "bmas_adverts.txt", "DATA" ) then
-		file.Write( "bmas_adverts.txt", "[]" )
+		luadata.WriteFile( "bmas_adverts.txt", {} )
 	else
-		local read = file.Read( "bmas_adverts.txt", "DATA" )
-		local decoded = util.JSONToTable( read ) or {}
-		for k,v in pairs(decoded) do
-			bmas.adverts[k] = {text = decoded[k].text,color = decoded[k].color,sec = decoded[k].sec}
+		local read = luadata.ReadFile("bmas_adverts.txt")
+		for k,v in pairs(read) do
+			bmas.adverts[k] = {text = read[k].text,color = read[k].color,sec = read[k].sec}
 		end
 	end
 end
@@ -24,10 +23,9 @@ bmas.LoadAdverts()
 
 function bmas.SaveAdverts()
 	if !file.Exists( "bmas_adverts.txt", "DATA" ) then
-		file.Write( "bmas_adverts.txt", str )
+		luadata.WriteFile( "bmas_adverts.txt", {} )
 	else
-		local encode = util.TableToJSON(bmas.adverts)
-		file.Write( "bmas_adverts.txt", encode )
+		luadata.WriteFile( "bmas_adverts.txt", bmas.adverts)
 	end
 end
 hook.Add("ShutDown","BMAS_LIB_ADVERTS_S",bmas.SaveAdverts)
