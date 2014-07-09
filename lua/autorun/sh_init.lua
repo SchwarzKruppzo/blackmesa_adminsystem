@@ -161,36 +161,17 @@ end
 //
 //===================================================================================
 
-function bmas.CheckName( ply, str ) // hello doctor freeman
-	if ( str == "*" ) then
-		return true
-	elseif ( string.match( str, "STEAM_[0-5]:[0-9]:[0-9]+" ) ) then
-		return ply:SteamID() == str
-	elseif ( string.Left( str, 1 ) == "\"" and string.Right( str, 1 ) == "\"" ) then
-		return ( ply:Nick() == string.sub( str, 2, #str - 1 ) )
-	else
-		return ( string.lower( ply:Nick() ) == string.lower( str ) or string.find( string.lower( ply:Nick() ), string.lower( str ), nil, true ) )
-	end
-end
-
 function bmas.FindPlayer( name ) // hey freeman
-	local matches = {}
-
-	if ( !name or #name == 0 ) then
-		matches[1] = def
+	local entity = easylua.FindEntity( name )
+	local nick = "unnamed"
+	if type(entity) =="table" then
+		nick = "all"
 	else
-		if ( type( name ) != "table" ) then name = { name } end
-
-		for _, ply in ipairs( player.GetAll() ) do
-			for _, str in ipairs( name ) do
-				if ( bmas.CheckName( ply, str ) and !table.HasValue( matches, ply ) ) then 
-					table.insert( matches, ply ) 
-				end
-			end
+		if entity:IsPlayer() then
+			nick = entity:Nick()
 		end
 	end
-
-	return matches
+	return entity,nick
 end
 bmas.Initialize()
 
@@ -199,7 +180,7 @@ function bmas.PlayerInitialSpawn( ply )
 	timer.Simple(2,function() 
 		bmas.Notify( ply, bmas.colors.white, "Hello. The Black Mesa Announcement System welcomes you to the Black Mesa Research Facility.")
 		bmas.Notify( ply, bmas.colors.white, "Remember: have a secure day!")
-		ply:SendLua("LocalPlayer():EmitSound('vox/vox_login.wav')") 
+		ply:SendLua("LocalPlayer():EmitSound('vox/vox_login.wav')")
 	end)
 end
 hook.Add( "PlayerInitialSpawn", "BMAS_PIS", bmas.PlayerInitialSpawn )
