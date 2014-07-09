@@ -83,7 +83,7 @@ function meta:IsUserGroup( str )
 end
 if SERVER then
 bmas.CreateCommand( "setaccess", function(ply,args)
-	local target = bmas.FindPlayer(args[1])[1]
+	local target,nick = bmas.FindPlayer( args[1] )
 	local rank = args[2]
 	if IsValid(target) then
 		if target:IsPlayer() then
@@ -93,7 +93,7 @@ bmas.CreateCommand( "setaccess", function(ply,args)
 			end
 			if target:BMAS_GetAccess() ~= rank then
 				target:BMAS_SetAccess(rank)
-				bmas.CommandNotify(ply," has set ",target:Nick(),"",""," access to ",rank)
+				bmas.CommandNotify(ply," has set ",nick,"",""," access to ",rank)
 			end
 		end
 	end

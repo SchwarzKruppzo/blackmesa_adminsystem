@@ -50,7 +50,7 @@ bmas.CreateCommand( "lb", function( ply, args )
 	end
 end, 1 , "<code>" )
 bmas.CreateCommand( "lm", function( ply, args )
-	local t_ply = bmas.FindPlayer( args[1] )[1]
+	local t_ply,nick = bmas.FindPlayer( args[1] )
 	local code = table.concat( args, " ", 2 )
 	if IsValid( t_ply ) then
 		if code ~= nil then
