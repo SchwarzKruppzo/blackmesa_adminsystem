@@ -1,4 +1,4 @@
-//===================================================================================
+﻿//===================================================================================
 // 		Black Mesa Administrative System
 //			a 228 admin system
 //
@@ -9,19 +9,17 @@
 //===================================================================================
 
 bmas.hostname = {}
-bmas.hostname_prefix = "metaconstruct #228 - "
+bmas.hostname_prefix = "Command Center 'Gondor' - "
 bmas.hostname = {
-	"plz dont ban me",
+	"Samo suschestvovanie INRI delaet nas vseh lashkami.",
 	"hello garry, why you are so stupid?",
-	"g-moders got fucked up",
 	"bad argument #1: nil expected, got string",
 	"PLZ UNBAN ME!11 plz plz",
 	"ubi dead. demon stand by",
 	"because this is 1337 variant to VAC ban a guy",
-	"good food good life nestle",
 	"how to noclip",
-	"hello guys, how are you?",
 	"what here to do?",
+	"Garry's mod is in chaos.",
 	"developers are pink",
 	"tushenka amerikanskaya - 300 rubles",
 	"I GOT HACKED BY WATCHDOGS!111!11",
@@ -29,12 +27,13 @@ bmas.hostname = {
 	"bitch mode enabled for tostring(ply)",
 	"bad argument #228: string expected, got string",	
 	"oh no!11 capster here!11 panic!11",
-	"228 trash mothafuka",
+	"INRI zapreshen konvenciey",
 	"WHAT A FUCK BOOOOOOOOOOOOOOOOOOOOOOM",
+	"Fertnon can't save the gmod.",
 	"he is doing addon for coderhire",
 	"YOU ARE BANNED WITH REASON TEST",
-	"witam polish, ty jestes nup",
-	"omg bsod, how you did it?",
+	"Capster is a god.",
+	"Fertnon! Help, i got hacked by INRI.",
 	"do you like sandvichezzzz?",
 	"FUS-ROH-DAH!!!!!!!!!PIECE OF SHIT OMG OMG",
 	"warning, unauthorized biological forms detected"
