@@ -12,10 +12,9 @@ timer.Simple(.1,function()
 local meta = FindMetaTable("Player")
 function meta:IsBanned()
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
-	local read = file.Read( "bmas_bans.txt", "DATA" )
-	local decoded = util.JSONToTable( read ) or {}
-	if decoded[ self:SteamID() ] then
-		return true,decoded[ self:SteamID() ].r
+	local read = luadata.ReadFile( "bmas_bans.txt" )
+	if read[ self:SteamID() ] then
+		return true,read[ self:SteamID() ].r
 	else
 		return false,""
 	end
@@ -31,34 +30,29 @@ function bmas.Ban( steamid, time, reason, banner )
 	local str = util.TableToJSON( save )
 	
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then
-		file.Write( "bmas_bans.txt", str )
+		luadata.WriteFile( "bmas_bans.txt", save )
 	else
-		local read = file.Read( "bmas_bans.txt", "DATA" )
-		local decoded = util.JSONToTable( read ) or {}
-		decoded[steamid] = {t = time,r = reason, comid = util.SteamIDTo64( steamid ), banner = nick}
-		local encode = util.TableToJSON(decoded)
-		file.Write( "bmas_bans.txt", encode )
+		local read = luadata.ReadFile( "bmas_bans.txt" )
+		read[steamid] = {t = time,r = reason, comid = util.SteamIDTo64( steamid ), banner = nick}
+		luadata.WriteFile( "bmas_bans.txt", read )
 	end
 end
 function bmas.UnBan( steamid )
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
-	local read = file.Read( "bmas_bans.txt", "DATA" )
-	local decoded = util.JSONToTable( read ) or {}	
-	if decoded[ steamid ] then
-		decoded[ steamid ].banner = nil
-		decoded[ steamid ].comid = nil
-		decoded[ steamid ].t = nil
-		decoded[ steamid ].r = nil
-		decoded[ steamid ] = nil
-		local encode = util.TableToJSON(decoded)
-		file.Write( "bmas_bans.txt", encode )
+	local read = luadata.ReadFile( "bmas_bans.txt" )
+	if read[ steamid ] then
+		read[ steamid ].banner = nil
+		read[ steamid ].comid = nil
+		read[ steamid ].t = nil
+		read[ steamid ].r = nil
+		read[ steamid ] = nil
+		luadata.WriteFile( "bmas_bans.txt", read )
 	end
 end
 function bmas.IsBanned( comid )
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
-	local read = file.Read( "bmas_bans.txt", "DATA" )
-	local decoded = util.JSONToTable( read ) or {}
-	for k,v in pairs(decoded) do
+	local read = luadata.ReadFile( "bmas_bans.txt" )
+	for k,v in pairs(read) do
 		if v.comid == comid then
 			return true,"You are banned by "..v.banner.." with reason "..v.r
 		end
@@ -67,9 +61,8 @@ function bmas.IsBanned( comid )
 end
 function bmas.IsBannedSteamID( steamid )
 	if !file.Exists( "bmas_bans.txt", "DATA" ) then return end
-	local read = file.Read( "bmas_bans.txt", "DATA" )
-	local decoded = util.JSONToTable( read ) or {}
-	if decoded[ steamid ] then
+	local read = luadata.ReadFile( "bmas_bans.txt" )
+	if read[ steamid ] then
 		return true
 	else
 		return false
@@ -106,7 +99,7 @@ if SERVER then
 		print(...)
 	end
 
-	function CheckBan(steamID, ipAdderss, svPass, clPass, strName)
+	function bmas.CheckBan(steamID, ipAdderss, svPass, clPass, strName)
 		connect_manager.Join("Nick: "..strName..". Steam Profile: http://steamcommunity.com/profiles/" .. steamID.." IP Address: "..ipAdderss )
 		local ban,reason = bmas.IsBanned( steamID  )
 		if ban then
@@ -120,7 +113,7 @@ if SERVER then
 			end
 		end
 	end
-	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",CheckBan)
+	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",bmas.CheckBan)
 	gameevent.Listen( "player_disconnect" )
 	hook.Add( "player_disconnect", "BMAS_LIB_DISCONNECT", function( data )
 		connect_manager.Disconnect(data.name.." ("..data.reason..")")
@@ -136,19 +129,19 @@ if SERVER then
 	end, 1 , "<commands>" )
 	
 	bmas.CreateCommand( "kick", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		local reason = args[2] or ""
 		if IsValid( t_ply ) then
-			t_ply:Kick( reason )
 			if reason ~= "" then
-				bmas.CommandNotify(ply," has kicked ",t_ply:Nick(),"",""," with reason ",reason)
+				bmas.CommandNotify(ply," has kicked ",nick,"",""," with reason ",reason)
 			else
-				bmas.CommandNotify(ply," has kicked ",t_ply:Nick(),"",""," without reason.")
+				bmas.CommandNotify(ply," has kicked ",nick,"",""," without reason.")
 			end
+			t_ply:Kick( reason )
 		end
 	end, 2 , "<player name> [reason]" )
 	bmas.CreateCommand( "ban", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		local time = args[2] or 0
 		local reason = table.concat( args, " ", 3)
 		if IsValid( t_ply ) then
@@ -162,18 +155,17 @@ if SERVER then
 			elseif correct_time <= 0 then
 				bmas.Ban( t_ply:SteamID(), 0,  reason, ply)
 			end
-			t_ply:Kick( reason )
 
 			if tonumber(correct_time) > 0 and reason ~= "" then	// if we have time and reason then 
-				bmas.CommandNotify(ply," has banned ",t_ply:Nick()," for ",tostring(correct_time)," minutes with reason ",reason)
+				bmas.CommandNotify(ply," has banned ",nick," for ",tostring(correct_time)," minutes with reason ",reason)
 			elseif tonumber(correct_time) > 0 and reason == "" then // if we have time but don't have reason then
-				bmas.CommandNotify(ply," has banned ",t_ply:Nick()," for ",tostring(correct_time)," minutes without reason.")
+				bmas.CommandNotify(ply," has banned ",nick," for ",tostring(correct_time)," minutes without reason.")
 			elseif tonumber(correct_time) == 0 and reason ~= "" then // if we don't have time (0) but have reason then
-				bmas.CommandNotify(ply," has banned ",t_ply:Nick()," permently",""," with reason ",reason)
+				bmas.CommandNotify(ply," has banned ",nick," permently",""," with reason ",reason)
 			elseif tonumber(correct_time) == 0 and reason == "" then // if we don't have and reason then
-				bmas.CommandNotify(ply," has banned ",t_ply:Nick()," permently",""," without reason.")
+				bmas.CommandNotify(ply," has banned ",nick," permently",""," without reason.")
 			end
-			
+			t_ply:Kick( reason )
 		end
 	end, 2 , "<player name> [time minutes] [reason]" )	
 	bmas.CreateCommand( "banid", function( ply, args )	
@@ -191,11 +183,6 @@ if SERVER then
 			if tonumber(time) ~= nil then
 				correct_time = tonumber(time)
 			end
-			for k,v in pairs(player.GetAll()) do
-				if v:SteamID() == steamID then
-					v:Kick( reason )
-				end
-			end
 			if correct_time ~= 0 then
 				bmas.Ban( steamID, tostring( os.time() + correct_time*60 ), reason, ply)
 			elseif correct_time <= 0 then
@@ -210,6 +197,11 @@ if SERVER then
 				bmas.CommandNotify(ply," has banned SteamID ",steamID," permently",""," with reason ",reason)
 			elseif tonumber(correct_time) == 0 and reason == "" then // if we don't have and reason then
 				bmas.CommandNotify(ply," has banned SteamID ",steamID," permently",""," without reason.")
+			end
+			for k,v in pairs(player.GetAll()) do
+				if v:SteamID() == steamID then
+					v:Kick( reason )
+				end
 			end
 		end
 	end, 2 , "<steamid> [time minutes] [reason]")	
@@ -241,10 +233,10 @@ if SERVER then
 		end
 	end, 3 , "<none>" )
 	bmas.CreateCommand( "crash", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
 			t_ply:SendLua("while true do end")
-			bmas.CommandNotify(ply," has crashed ",t_ply:Nick(),"","","")
+			bmas.CommandNotify(ply," has crashed ",nick,"","","")
 		end
 	end, 1 , "<player name>" )
 	bmas.CreateCommand( "cleanup", function( ply, args )	
@@ -286,70 +278,51 @@ if SERVER then
 		end
 	end, 2 , "<none>" )
 	bmas.CreateCommand( "goto", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
 			ply:SetPos(t_ply:GetPos()-t_ply:GetForward()*50)
-			bmas.CommandNotify(ply," has teleported to ",t_ply:Nick(),"","","")
+			bmas.CommandNotify(ply," has teleported to ",nick,"","","")
 		end
 	end, 1 , "<player name>" )	
 	bmas.CreateCommand( "bring", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
-		local t2_ply = bmas.FindPlayer( args[2] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
+		local t2_ply,nick2 = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
 			if IsValid(t2_ply) then
 				t_ply:SetPos(t2_ply:GetPos()+t2_ply:GetForward()*50)
-				bmas.CommandNotify(ply," has bring ",t_ply:Nick()," to ",t2_ply:Nick(),"")
+				bmas.CommandNotify(ply," has bring ",nick," to ",nick2,"")
 			else
 				t_ply:SetPos(ply:GetPos()+ply:GetForward()*50)
-				bmas.CommandNotify(ply," has bring ",t_ply:Nick()," to ","self","")
+				bmas.CommandNotify(ply," has bring ",nick," to ","self","")
 			end
 		end
 	end, 1 , "<player name> [player2 name]" )	
 	bmas.CreateCommand( "slay", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
 			t_ply:Kill()
-			bmas.CommandNotify(ply," has slayed ",t_ply:Nick(),"","","")
+			bmas.CommandNotify(ply," has slayed ",nick,"","","")
 		end
 	end, 1 , "<player name>" )	
 	bmas.CreateCommand( "spawn", function( ply, args )	
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
 			t_ply:Spawn()
-			bmas.CommandNotify(ply," has spawned ",t_ply:Nick(),"","","")
+			bmas.CommandNotify(ply," has spawned ",nick,"","","")
 		end
 	end, 1 , "<player name>" )
-	local SOUND_DISCO = false
-	bmas.CreateCommand( "disco", function( ply, args )
-		if SOUND_DISCO then
-			for k,v in pairs( player.GetAll() ) do
-				v:SendLua("SOUND_DISCO:Stop()")
-			end
-			SOUND_DISCO = false
-		else
-			SOUND_DISCO = true
-			for k,v in pairs( player.GetAll() ) do
-			v:SendLua([[
-			SOUND_DISCO = nil
-			sound.PlayURL( "http://puu.sh/9Funs.mp3", "", function( sound )
-			SOUND_DISCO = sound
-			end)]])
-			end
-		end
-	end, 1 , "<none>" )
+	
 	
 	timer.Create("BMAS_UNBAN",5,0,function()
 		if file.Exists( "bmas_bans.txt", "DATA" ) then
-			local read = file.Read( "bmas_bans.txt", "DATA" )
-			local decoded = util.JSONToTable( read ) or {}	
-			for k,v in pairs(decoded) do
+			local read = luadata.ReadFile( "bmas_bans.txt" )
+			for k,v in pairs(read) do
 				if os.time() >= tonumber(v.t) then
 					if tonumber(v.t) ~= 0 then
 						//bmas.CommandNotify( "test" ," is unbanned (Ban time is reached).","","","","")
 						bmas.Notify(bmas.colors.gray,k,bmas.colors.white," is unbanned (Ban time is reached)")
-						decoded[ k ] = nil
-						local encode = util.TableToJSON(decoded)
-						file.Write( "bmas_bans.txt", encode )
+						read[ k ] = nil
+						luadata.WriteFile( "bmas_bans.txt", read )
 					end
 				end
 			end
@@ -358,26 +331,14 @@ if SERVER then
 	
 	
 	bmas.CreateCommand( "god", function( ply, args )
-		local t_ply = bmas.FindPlayer( args[1] )[1]
+		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if t_ply then
-			if not t_ply.godmode then
+			if !t_ply:HasGodMode() then
 				t_ply:GodEnable()
-				t_ply.godmode = true
-				bmas.CommandNotify(ply," has enabled godmode for ",t_ply:Nick())
+				bmas.CommandNotify(ply," has enabled godmode for ",nick)
 			else
 				t_ply:GodDisable()
-				t_ply.godmode = false
-				bmas.CommandNotify(ply," has disabled godmode for ",t_ply:Nick())			
-			end
-		else
-			if not ply.godmode then
-				ply:GodEnable()
-				ply.godmode = true
-				bmas.CommandNotify(ply," has enabled godmode for ","self")
-			else
-				ply:GodDisable()
-				ply.godmode = false
-				bmas.CommandNotify(ply," has disabled godmode for ","self")			
+				bmas.CommandNotify(ply," has disabled godmode for ",nick)			
 			end
 		end
 	end, 2 , "<player name>" )
@@ -400,6 +361,12 @@ if SERVER then
 			v:ConCommand('r_cleardecals 1')
 		end
 		bmas.CommandNotify(ply," has removed all decals.","")
+	end, 1 , "<none>" )
+	bmas.CreateCommand( "url", function( ply, args )	
+		local str = table.concat( args )
+		for k,v in pairs( player.GetAll() ) do
+			v:SendLua([[g_3DHTML3:OpenURL(']]..str..[[')]])
+		end
 	end, 1 , "<none>" )
 end
 
