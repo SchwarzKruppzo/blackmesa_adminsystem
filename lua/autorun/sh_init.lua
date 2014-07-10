@@ -30,33 +30,18 @@ local function DestroyColor(...)
         end
         return args
 end
-
-function bmas.Error(...) -- For warnings only (without stack trace)
-        local args = DestroyColor(...)
- 
-        MsgC(Color(255, 0, 0), "[")
-        MsgC(Color(200, 0, 0), "BMAS - Error")
-        MsgC(Color(255, 0, 0), "] ")
-        print(unpack(args))
-end
  
 function bmas.Print(...)
         if CLIENT then return error("Calling bmas.Print from client?") end
         local args = DestroyColor(...)
- 
-        MsgC(Color(100, 255, 100), "[")
-        MsgC(Color(100, 200, 100), "BMAS")
-        MsgC(Color(100, 200, 100), "] ")
+		MsgC(Color(100, 255, 255), "[",Color(100, 200, 200), "BMAS",Color(100, 255, 255), "] ")
         print(unpack(args))
 end
  
 function bmas.PrintServer(...)
         if CLIENT then return error("Calling bmas.PrintServer from client?") end
         local args = DestroyColor(...)
- 
-        MsgC(Color(100, 100, 255), "[")
-        MsgC(Color(100, 100, 200), "BMAS - Server")
-        MsgC(Color(100, 100, 255), "] ")
+		MsgC(Color(100, 100, 255), "[",Color(100, 100, 200), "BMAS - Server",Color(100, 100, 255), "] ")
         print(unpack(args))
 end
  
@@ -64,10 +49,7 @@ end
 function bmas.PrintClient(...)
         if SERVER then return error("Calling bmas.PrintClient from server?") end
         local args = DestroyColor(...)
- 
-        MsgC(Color(255, 100, 100), "[")
-        MsgC(Color(200, 100, 100), "BMAS - Client")
-        MsgC(Color(255, 100, 100), "] ")
+		MsgC(Color(255, 100, 100), "[",Color(200, 100, 100), "BMAS - Client",Color(255, 100, 100), "] ")
         print(unpack(args))
 end
 
@@ -79,13 +61,6 @@ function bmas.Initialize()
 		bmas.PrintClient("Initialize finished clientside.")
 	end
 end
- 
-// Schwartsune Kumiko: Hey Vince!
-// Vince: wut?
-// Schwartsune Kumiko: Do you like sandvichez?
-// Vince: nop
-// Schwartsune Kumiko: DIE MOTHERFUCKER DIE!
-
 
 //===================================================================================
 //
