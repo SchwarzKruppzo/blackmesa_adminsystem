@@ -82,20 +82,20 @@ function meta:IsUserGroup( str )
 	end
 end
 if SERVER then
-bmas.CreateCommand( "setaccess", function(ply,args)
-	local target,nick = bmas.FindPlayer( args[1] )
-	local rank = args[2]
-	if IsValid(target) then
-		if target:IsPlayer() then
-			if !bmas.usergroups[rank] then 
-				bmas.SystemNotify(ply,bmas.colors.red,"No such usergroup found")
-				return
-			end
-			if target:BMAS_GetAccess() ~= rank then
-				target:BMAS_SetAccess(rank)
-				bmas.CommandNotify(ply," has set ",nick,"",""," access to ",rank)
+	bmas.CreateCommand( "setaccess", function(ply,args)
+		local target,nick = bmas.FindPlayer( args[1] )
+		local rank = args[2]
+		if IsValid(target) then
+			if target:IsPlayer() then
+				if !bmas.usergroups[rank] then 
+					bmas.SystemNotify(ply,bmas.colors.red,"No such usergroup found")
+					return
+				end
+				if target:BMAS_GetAccess() ~= rank then
+					target:BMAS_SetAccess(rank)
+					bmas.CommandNotify(ply," has set ",nick,"",""," access to ",rank)
+				end
 			end
 		end
-	end
-end, 2 , "<player name> <usergroup name>" )
+	end, 2 , "<player name> <usergroup name>" )
 end
