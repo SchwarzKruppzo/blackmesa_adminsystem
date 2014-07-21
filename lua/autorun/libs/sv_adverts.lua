@@ -28,8 +28,6 @@ function bmas.SaveAdverts()
 		luadata.WriteFile( "bmas_adverts.txt", bmas.adverts)
 	end
 end
-hook.Add("ShutDown","BMAS_LIB_ADVERTS_S",bmas.SaveAdverts)
-
 
 function bmas.AdvertDestroyTimers()
 	for k,v in pairs(bmas.adverts) do
@@ -47,9 +45,6 @@ function bmas.AdvertTimers()
 		end
 	end
 end
-hook.Add("Think","BMAS_LIB_ADVERTS_T",bmas.AdvertTimers)
-
-
 
 bmas.CreateCommand( "addadvert", function(ply,args) // >addadvert <name> <seconds> <r> <g> <b> <text>
 	local name = args[1]
@@ -107,3 +102,7 @@ bmas.CreateCommand( "adverts", function( ply, args )
 		bmas.SystemNotify( ply, bmas.colors.gray, k )
 	end
 end, 2 , "<none>" )
+
+-- hooks
+hook.Add("ShutDown","BMAS_LIB_ADVERTS_S",bmas.SaveAdverts)
+hook.Add("Think","BMAS_LIB_ADVERTS_T",bmas.AdvertTimers)
