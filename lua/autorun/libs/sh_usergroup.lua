@@ -48,14 +48,13 @@ function bmas.SetupAccess( ply ) // local because capster
 		end
 	end
 end
-hook.Add("PlayerInitialSpawn","BMAS_LIB_USERGROUP_PIS",bmas.SetupAccess) // i like BIG_NAMES_WITH__
 
 local meta = FindMetaTable("Player")
 function meta:IsSuperAdmin()
 	if not bmas then return false end
-	if self:GetNWString("m_sAccess") == "" then return false end
+	if self:BMAS_GetAccess() == "" then return false end
 	
-	local access = bmas.usergroups[self:GetNWString("m_sAccess")].access
+	local access = bmas.usergroups[self:BMAS_GetAccess()].access
 	if access == 1 then
 		return true
 	else
@@ -81,6 +80,29 @@ function meta:IsUserGroup( str )
 		return false
 	end
 end
+function bmas.OverrideTeamLib() // hack 228
+	if gamemode.Get("sandbox") then
+	function team.GetName( number )
+		local name = bmas.usergroups[ number ].name
+		return name
+	end
+	function team.GetColor( number )
+		local clr = bmas.usergroups[ number ].color
+		return clr
+	end
+	end
+	local meta = FindMetaTable("Player")
+	if gamemode.Get("sandbox") then
+		function meta:Team()
+			return self:BMAS_GetAccess()
+		end
+	end
+end
+
+-- hooks
+hook.Add("PlayerInitialSpawn","BMAS_LIB_USERGROUP_PIS",bmas.SetupAccess)
+hook.Add("Initialize","BMAS_OVERRIDE_TEAM_LIB",bmas.OverrideTeamLib)
+
 if SERVER then
 	bmas.CreateCommand( "setaccess", function(ply,args)
 		local target,nick = bmas.FindPlayer( args[1] )
