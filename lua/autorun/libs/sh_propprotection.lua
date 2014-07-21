@@ -158,6 +158,8 @@ if CLIENT then
 		else
 			color = Color(255,0,0)
 		end
+		
+		
 		local text = "Owner: " .. ent:BMAS_GetOwner():Nick()
 		surface.SetFont("DebugFixed")
 		local w,h = surface.GetTextSize( text )   
