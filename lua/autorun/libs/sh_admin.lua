@@ -121,6 +121,8 @@ if SERVER then
 			end
 		end
 	end
+	
+	-- hooks
 	hook.Add("CheckPassword","BMAS_LIB_CHECKBAN",bmas.CheckBan)
 	hook.Add( "player_disconnect", "BMAS_LIB_DISCONNECT", function( data )
 		connect_manager.Disconnect(data.name.." ("..data.reason..")")
@@ -243,7 +245,7 @@ if SERVER then
 			bmas.CommandNotify(ply," has crashed ",nick,"","","")
 		end
 	end, 1 , "<player name>" )
-	bmas.CreateCommand( "cleanup", function( ply, args )	
+	bmas.CreateCommand( "cleanupserver", function( ply, args )	
 		local time = args[1]
 		if cleanup.GetStatus() or shutdown.GetStatus() then
 			bmas.SystemNotify( ply, bmas.colors.red, "Another event is already started." )
@@ -365,6 +367,15 @@ if SERVER then
 		end
 		bmas.CommandNotify(ply," has removed all decals.","")
 	end, 1 , "<none>" )
+	bmas.CreateCommand( "cleanup", function( ply, args )
+		local t_ply,nick = bmas.FindPlayer( args[1] )
+		if IsValid(t_ply) then
+			if cleanup and cleanup.CC_Cleanup then
+				cleanup.CC_Cleanup(t_ply,"gmod_cleanup",{})
+				bmas.CommandNotify(ply," has cleanuped ",nick,"'s props.","","")
+			end
+		end
+	end, 2, "<player name>" )
 end
 
 

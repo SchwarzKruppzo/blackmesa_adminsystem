@@ -21,6 +21,15 @@ bmas.colors.green = Color(0,255,0)
 bmas.colors.gray = Color(200,200,200)
 bmas.colors.red = Color(255,100,100)
 
+function bmas.unpack( table ) // hack for console
+	local str = ""
+	for k,v in pairs( table ) do
+		if type(v) ~= "table" then
+			str = str .. v
+		end
+	end
+	return str;
+end
 local function DestroyColor(...)
         local args = {...}
         for k,v in pairs(args) do
@@ -35,14 +44,14 @@ function bmas.Print(...)
         if CLIENT then return error("Calling bmas.Print from client?") end
         local args = DestroyColor(...)
 		MsgC(Color(100, 255, 255), "[",Color(100, 200, 200), "BMAS",Color(100, 255, 255), "] ")
-        print(unpack(args))
+        print(bmas.unpack(args))
 end
  
 function bmas.PrintServer(...)
         if CLIENT then return error("Calling bmas.PrintServer from client?") end
         local args = DestroyColor(...)
 		MsgC(Color(100, 100, 255), "[",Color(100, 100, 200), "BMAS - Server",Color(100, 100, 255), "] ")
-        print(unpack(args))
+        print(bmas.unpack(args))
 end
  
  
@@ -50,7 +59,7 @@ function bmas.PrintClient(...)
         if SERVER then return error("Calling bmas.PrintClient from server?") end
         local args = DestroyColor(...)
 		MsgC(Color(255, 100, 100), "[",Color(200, 100, 100), "BMAS - Client",Color(255, 100, 100), "] ")
-        print(unpack(args))
+        print(bmas.unpack(args))
 end
 
 function bmas.Initialize()
@@ -94,6 +103,7 @@ end
 //===================================================================================
 
 if ( SERVER ) then
+	
 	function bmas.Notify(...)
 			local args = {...}
 	 
@@ -149,13 +159,3 @@ function bmas.FindPlayer( name ) // hey freeman
 	return entity,nick
 end
 bmas.Initialize()
-
-
-function bmas.PlayerInitialSpawn( ply )
-	timer.Simple(2,function() 
-		bmas.Notify( ply, bmas.colors.white, "Hello. The Black Mesa Announcement System welcomes you to the Black Mesa Research Facility.")
-		bmas.Notify( ply, bmas.colors.white, "Remember: have a secure day!")
-		ply:SendLua("LocalPlayer():EmitSound('vox/vox_login.wav')")
-	end)
-end
-hook.Add( "PlayerInitialSpawn", "BMAS_PIS", bmas.PlayerInitialSpawn )
