@@ -51,7 +51,7 @@ function bmas.PrintVOX(...)
         MsgC(Color(255, 165, 0), "[")
         MsgC(Color(200, 165, 0), "VOX")
         MsgC(Color(255, 165, 0), "] ")
-        print(unpack(args))
+        print(bmas.unpack(args))
 end
 
 
