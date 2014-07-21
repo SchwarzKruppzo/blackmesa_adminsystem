@@ -11,11 +11,20 @@
 local meta = FindMetaTable("Entity")
 if SERVER then
 	function meta:BMAS_SetOwner( ply )
-		self:SetNWEntity( "m_hOwner", ply )
+		self:SetNWString( "m_hOwner", ply:SteamID() )
 	end
 end
 function meta:BMAS_GetOwner( ply )
-	return self:GetNWEntity( "m_hOwner" )
+	return self:GetNWString( "m_hOwner" )
+end
+
+local function PlayerExists( steamid )
+	for k,v in pairs(player.GetAll()) do
+		if v:SteamID() == steamid then
+			return v
+		end
+	end
+	return nil
 end
 
 local metaply = FindMetaTable("Player")
@@ -25,7 +34,7 @@ function metaply:BMAS_GetFriends()
 	return decoded
 end
 function metaply:BMAS_CheckFriends( steamid )
-	local decoded = self:BMAS_GetFriends()
+	local decoded = self:BMAS_GetFriends() or {}
 	for k,v in pairs(decoded) do
 		if v.s == steamid then
 			return true
@@ -37,10 +46,16 @@ function metaply:BMAS_CheckPropAccess( ent )
 	if self:IsAdmin() then
 		return true
 	else
-		if ent:BMAS_GetOwner() == self then
+		if ent:BMAS_GetOwner() == self:SteamID() then
 			return true
-		elseif !ent:IsPlayer() and ent:BMAS_GetOwner():BMAS_CheckFriends( self:SteamID() ) then
-			return true
+		elseif !ent:IsPlayer() then
+			if IsValid(PlayerExists(ent:BMAS_GetOwner())) then
+				if PlayerExists(ent:BMAS_GetOwner()):BMAS_CheckFriends( self:SteamID() ) then
+					return true
+				else
+					return false
+				end
+			end
 		else
 			return false
 		end
@@ -150,17 +165,22 @@ if CLIENT then
 		local self = LocalPlayer()
 		local trace = self:GetEyeTrace()
 		local ent = trace.Entity
-		if !IsValid(ent) then return end
-		if !IsValid(ent:BMAS_GetOwner()) then return end
 		local color = Color(255,255,255)
+		local text = ""
+		if !IsValid(ent) then return end
+		if ent:IsPlayer() then return end
+		
 		if self:BMAS_CheckPropAccess( ent ) then
 			color = Color(0,255,0)
 		else
 			color = Color(255,0,0)
 		end
+		if IsValid(PlayerExists(ent:BMAS_GetOwner())) then 
+			text = "Owner: " .. PlayerExists(ent:BMAS_GetOwner()):Nick()
+		else
+			text = "Owner: Disconnected Player"
+		end
 		
-		
-		local text = "Owner: " .. ent:BMAS_GetOwner():Nick()
 		surface.SetFont("DebugFixed")
 		local w,h = surface.GetTextSize( text )   
 		
