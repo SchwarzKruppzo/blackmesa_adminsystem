@@ -82,14 +82,21 @@ function meta:IsUserGroup( str )
 end
 function bmas.OverrideTeamLib() // hack 228
 	if gamemode.Get("sandbox") then
-	function team.GetName( number )
-		local name = bmas.usergroups[ number ].name
-		return name
-	end
-	function team.GetColor( number )
-		local clr = bmas.usergroups[ number ].color
-		return clr
-	end
+		function team.GetName( number )
+			local name = bmas.usergroups[ number ].name
+			return name
+		end
+		function team.GetColor( number )
+			if type(number) == "string" then
+				if bmas.usergroups[ number ] then
+					local clr = bmas.usergroups[ number ].color
+					return clr
+				end
+				return Color(255,255,255,255)
+			else
+				return Color(255,255,255,255)
+			end
+		end
 	end
 	local meta = FindMetaTable("Player")
 	if gamemode.Get("sandbox") then
