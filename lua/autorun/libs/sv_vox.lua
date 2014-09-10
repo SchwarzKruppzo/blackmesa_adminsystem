@@ -11,21 +11,11 @@
 
 resource.AddWorkshop("232356231")
 
-local voxPath = "vox/"
 function bmas.PlayVOX( ply, str )
 	if !IsValid(ply) then return end
-	local delay = 0
-	local strTable = string.Explode( " ", str )
-	for k,v in pairs( strTable ) do
-		local soundFile = voxPath .. v .. ".wav"
-		if k ~= 1 then
-			delay = delay + SoundDuration( soundFile ) + .1
-		end
-		timer.Simple( delay, function()
-			if !IsValid( ply ) then return end
-			ply:SendLua("LocalPlayer():EmitSound( '" .. soundFile .. "' )")
-		end )
-	end
+	umsg.Start( "PlayVOX", ply )
+		umsg.String( str )
+	umsg.End()
 end
 function bmas.AllPlayVox( str )
 	for k,v in pairs(player.GetAll()) do
