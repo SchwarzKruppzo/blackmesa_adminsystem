@@ -367,6 +367,14 @@ if SERVER then
 		end
 		bmas.CommandNotify(ply," has removed all decals.","")
 	end, 1 , "<none>" )
+	local function PlayerExists( steamid )
+		for k,v in pairs(player.GetAll()) do
+			if v:SteamID() == steamid then
+				return v
+			end
+		end
+		return nil
+	end
 	bmas.CreateCommand( "cleanup", function( ply, args )
 		local t_ply,nick = bmas.FindPlayer( args[1] )
 		if IsValid(t_ply) then
@@ -374,6 +382,15 @@ if SERVER then
 				cleanup.CC_Cleanup(t_ply,"gmod_cleanup",{})
 				bmas.CommandNotify(ply," has cleanuped ",nick,"'s props.","","")
 			end
+		elseif args[1] == nil then
+			for k,v in pairs(ents.GetAll()) do
+				if string.match( v:BMAS_GetOwner(), "STEAM_[0-5]:[0-9]:[0-9]+" ) then
+					if !IsValid(PlayerExists(v:BMAS_GetOwner())) then
+						v:Remove()
+					end
+				end
+			end
+			bmas.CommandNotify(ply," has cleanuped disonnected props.","")
 		end
 	end, 2, "<player name>" )
 end
