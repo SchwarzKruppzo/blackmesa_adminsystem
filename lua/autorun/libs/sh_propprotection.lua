@@ -14,7 +14,7 @@ if SERVER then
 		self:SetNWString( "m_hOwner", ply:SteamID() )
 	end
 end
-function meta:BMAS_GetOwner( ply )
+function meta:BMAS_GetOwner()
 	return self:GetNWString( "m_hOwner" )
 end
 
@@ -91,11 +91,6 @@ function bmas.PhysgunPickup(ply, ent)
 	return ply:BMAS_CheckPropAccess( ent )
 end
 hook.Add( "PhysgunPickup", "BMAS_LIB_PP", bmas.PhysgunPickup )
-function bmas.CanTool(ply, trace, tool)
-	local ent = trace.Entity
-	return ply:BMAS_CheckPropAccess( ent )
-end
-hook.Add( "CanTool", "BMAS_LIB_PP", bmas.CanTool )
 
 
 if SERVER then
@@ -156,6 +151,71 @@ if SERVER then
 			bmas.SystemNotify( ply, bmas.colors.white, "ID: ", bmas.colors.gray, k, bmas.colors.white, " - Nick: ", bmas.colors.gray, v.n, bmas.colors.white, " - SteamID: ", bmas.colors.gray, v.s )
 		end
 	end, 3 , "<none>" )
+	
+	// Start code by Falco
+	if cleanup then
+		bmas.oldcleanup = bmas.oldcleanup or cleanup.Add
+		function cleanup.Add(ply, Type, ent)
+			if not IsValid(ply) or not IsValid(ent) then return bmas.oldcleanup(ply, Type, ent) end
+
+			ent:BMAS_SetOwner( ply )
+
+			if ent:GetClass() == "gmod_wire_expression2" then
+				ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+			end
+			
+			return bmas.oldcleanup(ply, Type, ent)
+		end
+	end
+	local PLAYER = FindMetaTable("Player")
+
+	if PLAYER.AddCount then
+		bmas.oldcount = bmas.oldcount or PLAYER.AddCount
+		function PLAYER:AddCount(Type, ent)
+			if not IsValid(self) or not IsValid(ent) then return bmas.oldcount(self, Type, ent) end
+			--Set the owner of the entity
+			ent:BMAS_SetOwner(self)
+			return bmas.oldcount(self, Type, ent)
+		end
+	end
+	if undo then
+		local AddEntity, SetPlayer, Finish =  undo.AddEntity, undo.SetPlayer, undo.Finish
+		local Undo = {}
+		local UndoPlayer
+		function undo.AddEntity(ent, ...)
+			if type(ent) ~= "boolean" and IsValid(ent) then table.insert(Undo, ent) end
+			AddEntity(ent, ...)
+		end
+
+		function undo.SetPlayer(ply, ...)
+			UndoPlayer = ply
+			SetPlayer(ply, ...)
+		end
+
+		function undo.Finish(...)
+			if IsValid(UndoPlayer) then
+				for k,v in pairs(Undo) do
+					v:BMAS_SetOwner(UndoPlayer)
+				end
+			end
+			Undo = {}
+			UndoPlayer = nil
+
+			Finish(...)
+		end
+	end
+	// End code by Falco
+	
+	function bmas.PP_PlayerDisconnected( ply )
+		for k,v in pairs(ents.GetAll()) do
+			if IsValid(PlayerExists(v:BMAS_GetOwner())) then
+				if ply == PlayerExists(v:BMAS_GetOwner()) then
+					v:Remove()
+				end
+			end
+		end		
+	end
+	hook.Add("PlayerDisconnected","BMAS_LIB_PP_PD2",bmas.PP_PlayerDisconnected)
 end
 
 
