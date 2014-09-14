@@ -274,11 +274,11 @@ local function ScoreboardRemove()
 end
 ScoreboardRemove()
 
-function GM:ScoreboardCreate()
+function GAMEMODE:ScoreboardCreate()
    sboard = vgui.Create("BMASScoreboard")
 end
 
-function GM:ScoreboardShow()
+function GAMEMODE:ScoreboardShow()
    self.ShowScoreboard = true
 
    if not sboard_panel then
@@ -290,7 +290,7 @@ function GM:ScoreboardShow()
    sboard:SetVisible(true)
 end
 
-function GM:ScoreboardHide()
+function GAMEMODE:ScoreboardHide()
    self.ShowScoreboard = false
 
    gui.EnableScreenClicker(false)
@@ -300,6 +300,6 @@ function GM:ScoreboardHide()
    end
 end
 
-function GM:GetScoreboardPanel()
+function GAMEMODE:GetScoreboardPanel()
    return sboard
 end
