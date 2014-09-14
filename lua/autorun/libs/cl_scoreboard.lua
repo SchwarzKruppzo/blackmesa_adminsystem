@@ -267,9 +267,9 @@ end
 vgui.Register( "BMASScoreboard", PANEL, "Panel" )
 
 local function ScoreboardRemove()
-   if sboard_panel then
-      sboard_panel:Remove()
-      sboard_panel = nil
+   if sboard then
+      sboard:Remove()
+      sboard = nil
    end
 end
 ScoreboardRemove()
@@ -281,7 +281,7 @@ end
 function GAMEMODE:ScoreboardShow()
    self.ShowScoreboard = true
 
-   if not sboard_panel then
+   if not sboard then
       self:ScoreboardCreate()
    end
 
