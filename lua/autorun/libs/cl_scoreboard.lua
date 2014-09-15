@@ -118,7 +118,15 @@ function PANEL:Think()
                 v:Remove()
             end
             self.Players[k] = nil
-        end
+        else
+			if v.Player:BMAS_GetAccess() ~= self.group then
+				local pnl = self.Players[k]
+				if ValidPanel(pnl) then
+					v:Remove()
+				end
+				self.Players[k] = nil
+			end
+		end
     end
     
     self:InvalidateLayout()
@@ -205,6 +213,15 @@ function PANEL:Init()
     
     self.Main = vgui.Create( "BMAS_Frame",self )
     self.groups = {}
+	
+	for k,v in pairs( bmas.usergroups ) do
+		local group = vgui.Create( "BMAS_Access", self.Main:GetCanvas() )
+		group:Dock( TOP )
+		group:SetInfo( bmas.usergroups[k].name, bmas.usergroups[k].color, k) 
+		self.groups[k] = group
+		
+		self:PerformLayout() 
+	end
 end
 function PANEL:Paint( w, h )
     draw.RoundedBox( 0, 0, 0, w, h, Color(150,150,150,100) )
@@ -236,9 +253,12 @@ function PANEL:PerformLayout()
     self.HostName:SetSize( self:GetWide(), 64 )
     self.Main:GetCanvas():SetSize(self.Main:GetCanvas():GetWide(), u)
     self.Main:SetPos( 5, 64 + 15 )
-    self.Main:SetSize( self:GetWide() - 10, self:GetTall() - 64 - 20 - 10    )
+    self.Main:SetSize( self:GetWide() - 10, self:GetTall() - 64 - 20    )
 end
 function PANEL:Think()
+	if self.HostName:GetText() ~= GetHostName() then
+		self.HostName:SetText( GetHostName() )
+	end
     for k, p in pairs(player.GetAll()) do
         if p:Team() == TEAM_CONNECTING then continue end
         local gr = "user"
