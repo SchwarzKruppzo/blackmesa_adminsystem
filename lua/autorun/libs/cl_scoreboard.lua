@@ -215,6 +215,7 @@ function PANEL:Init()
     self.groups = {}
 	
 	for k,v in pairs( bmas.usergroups ) do
+		if k == "user" then continue end
 		local group = vgui.Create( "BMAS_Access", self.Main:GetCanvas() )
 		group:Dock( TOP )
 		group:SetInfo( bmas.usergroups[k].name, bmas.usergroups[k].color, k) 
@@ -222,6 +223,12 @@ function PANEL:Init()
 		
 		self:PerformLayout() 
 	end
+	local group = vgui.Create( "BMAS_Access", self.Main:GetCanvas() )
+	group:Dock( TOP )
+	group:SetInfo( bmas.usergroups["user"].name, bmas.usergroups["user"].color, "user") 
+	self.groups["user"] = group
+		
+	self:PerformLayout() 
 end
 function PANEL:Paint( w, h )
     draw.RoundedBox( 0, 0, 0, w, h, Color(150,150,150,100) )
@@ -234,7 +241,7 @@ function PANEL:PerformLayout()
         if ValidPanel( v ) then
             if table.Count(v.Players) > 0 then
                v:SetVisible(true)
-               v:InvalidateLayout()
+               //v:InvalidateLayout()
                u = u + v:GetTall() + 5
             else
                v:SetVisible(false)
