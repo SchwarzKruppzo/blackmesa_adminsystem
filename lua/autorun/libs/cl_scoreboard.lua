@@ -37,7 +37,8 @@ function PANEL:Paint( w, h )
     if not IsValid(self.Player) then return end
     
     local kolor = self.entered and 220 or 255
-    draw.RoundedBox( 0, 0, 0, w, h, Color(kolor,kolor,kolor,255) )
+    local r = self.Player:Alive() and 0 or 100
+    draw.RoundedBox( 0, 0, 0, w, h, Color(kolor,kolor - r,kolor - r,255) )
     
     surface.SetFont("BMAS_Player")
     local fw, fh = surface.GetTextSize( self.Player:Name() )
@@ -146,26 +147,20 @@ function PANEL:Init()
 
    self.scroll = vgui.Create("DVScrollBar", self)
    self.scroll.Paint = function( s, w, h )
-      surface.SetDrawColor( bfscoreboard.rowBGColor )
+      surface.SetDrawColor( Color(225,225,225,255))
       surface.DrawRect( 0, 0, w, h )
    end
    self.scroll.btnUp.Paint = function( s, w, h ) 
-      surface.SetDrawColor( Color(17, 24, 30) )
-      surface.DrawRect( 0, 0, w-1, h )
-      surface.SetDrawColor( Color(207, 203, 200) )
-      surface.DrawRect( 1, 1, w-3, h-2 )
+      surface.SetDrawColor( Color(225, 225, 225) )
+      surface.DrawRect( 0, 0, w, h )
    end
    self.scroll.btnDown.Paint = function( s, w, h ) 
-      surface.SetDrawColor( Color(17, 24, 30) )
-      surface.DrawRect( 0, 0, w-1, h )
-      surface.SetDrawColor( Color(207, 203, 200) )
-      surface.DrawRect( 1, 1, w-3, h-2 )
+      surface.SetDrawColor( Color(225, 225, 225) )
+      surface.DrawRect( 0, 0, w, h )
    end
    self.scroll.btnGrip.Paint = function( s, w, h )
-      surface.SetDrawColor( Color(17, 24, 30) )
-      surface.DrawRect( 0, 0, w-1, h )
-      surface.SetDrawColor( Color(207, 203, 200) )
-      surface.DrawRect( 1, 1, w-3, h-2 )
+      surface.SetDrawColor( Color(180, 180, 180) )
+      surface.DrawRect( 0, 0, w -   1, h )
    end
 end
 
@@ -231,13 +226,17 @@ function PANEL:PerformLayout()
     end
     local w = math.max(ScrW() * 0.5, 640)
     local h = ScrH() * 0.8
-    self:SetSize(w,64 + 15 + 5 + self.Main:GetCanvas():GetTall())
-    self:SetPos( (ScrW() - w) / 2, (ScrH() - self.Main:GetCanvas():GetTall()) / 2 )
-    
+    self:SetSize(w,math.Clamp(64 + 20 + self.Main:GetCanvas():GetTall(),0,h))
+    self:SetPos( (ScrW() - w) / 2, (ScrH() - (math.Clamp(64 + 20 + self.Main:GetCanvas():GetTall(),0,h))) / 2 )
+    if ( 64 + 20 + self.Main:GetCanvas():GetTall() ) > h then
+        self.Main:SetScroll(true)
+    else
+        self.Main:SetScroll(false)
+    end
     self.HostName:SetSize( self:GetWide(), 64 )
     self.Main:GetCanvas():SetSize(self.Main:GetCanvas():GetWide(), u)
     self.Main:SetPos( 5, 64 + 15 )
-    self.Main:SetSize( self:GetWide() - 10, math.Clamp(self.Main:GetCanvas():GetTall(),0,h) )
+    self.Main:SetSize( self:GetWide() - 10, self:GetTall() - 64 - 20 - 10    )
 end
 function PANEL:Think()
     for k, p in pairs(player.GetAll()) do
@@ -274,32 +273,22 @@ local function ScoreboardRemove()
 end
 ScoreboardRemove()
 
-function GAMEMODE:ScoreboardCreate()
+local function ScoreboardCreate()
    sboard = vgui.Create("BMASScoreboard")
 end
+hook.Add("ScoreboardShow","ShowScoreboard_BMAS",function() 
+	if not sboard then
+		ScoreboardCreate()
+	end
+	gui.EnableScreenClicker(true)
+	sboard:SetVisible(true)
+	return false 
+end)
+hook.Add("ScoreboardHide","HideScoreboard_BMAS",function()
+	gui.EnableScreenClicker(false)
 
-function GAMEMODE:ScoreboardShow()
-   self.ShowScoreboard = true
-
-   if not sboard then
-      self:ScoreboardCreate()
-   end
-
-   gui.EnableScreenClicker(true)
-
-   sboard:SetVisible(true)
-end
-
-function GAMEMODE:ScoreboardHide()
-   self.ShowScoreboard = false
-
-   gui.EnableScreenClicker(false)
-
-   if sboard then
-      sboard:SetVisible(false)
-   end
-end
-
-function GAMEMODE:GetScoreboardPanel()
-   return sboard
-end
+	if sboard then
+		sboard:SetVisible(false)
+	end
+	return false 
+end)
